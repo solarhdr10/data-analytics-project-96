@@ -27,8 +27,9 @@ aggr_last AS (
         b.visit_date::DATE AS visit_date,
         count(b.visitor_id) AS visitors_count,
         count(b.lead_id) AS leads_count,
-        count(b.visitor_id) FILTER (WHERE b.status_id = 142) AS purchases_count,
-        sum(b.amount) AS revenue
+        count(CASE WHEN b.status_id = 142 THEN b.visitor_id END)
+            AS purchases_count,
+        sum(CASE WHEN b.status_id = 142 THEN b.amount END) AS revenue
     FROM buffer AS b
     WHERE b.rn = 1
     GROUP BY
@@ -82,11 +83,10 @@ LEFT JOIN ads_costs AS ac
         al.visit_date = ac.campaign_date
         AND al.utm_medium = ac.utm_medium
         AND al.utm_campaign = ac.utm_campaign
-        AND al.visit_date = ac.campaign_date
+        AND al.utm_source = ac.utm_source
 ORDER BY
     al.revenue DESC NULLS LAST,
     al.visit_date ASC,
     al.visitors_count DESC,
     al.utm_source ASC,
-    al.utm_medium ASC,
-    al.utm_campaign ASC
+    al.utm_medium ASC;
