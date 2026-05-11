@@ -24,8 +24,10 @@ WITH buffer AS (
   SELECT
     utm_source,
     COUNT(DISTINCT visitor_id) AS visitors_count,
-    COUNT(DISTINCT CASE WHEN NOT lead_id IS NULL THEN visitor_id END) AS leads_count,
-    COUNT(DISTINCT CASE WHEN status_id = 142 THEN visitor_id END) AS purchases_count,
+    COUNT(DISTINCT CASE WHEN NOT lead_id IS NULL
+      THEN visitor_id END) AS leads_count,
+    COUNT(DISTINCT CASE WHEN status_id = 142
+      THEN visitor_id END) AS purchases_count,
     SUM(CASE WHEN NOT lead_id IS NULL THEN amount ELSE 0 END) AS revenue
   FROM buffer
   WHERE
@@ -43,7 +45,8 @@ aggr_last AS (
       CAST(b.visit_date AS DATE) AS visit_date,
       COUNT(b.visitor_id) AS visitors_count,
       COUNT(b.lead_id) AS leads_count,
-      COUNT(CASE WHEN b.status_id = 142 THEN b.visitor_id END) AS purchases_count,
+      COUNT(CASE WHEN b.status_id = 142
+        THEN b.visitor_id END) AS purchases_count,
       SUM(CASE WHEN b.status_id = 142 THEN b.amount END) AS revenue
     FROM buffer AS b
     WHERE
@@ -114,13 +117,13 @@ aggr_last AS (
   GROUP BY
     utm_source
 
-
-
     SELECT
     EXTRACT(DAY FROM visit_date) AS date,
     COUNT(DISTINCT visitor_id) AS visitors_count,
-    COUNT(DISTINCT CASE WHEN NOT lead_id IS NULL THEN visitor_id END) AS leads_count,
-    COUNT(DISTINCT CASE WHEN status_id = 142 THEN visitor_id END) AS purchases_count
+    COUNT(DISTINCT CASE WHEN NOT lead_id IS NULL
+      THEN visitor_id END) AS leads_count,
+    COUNT(DISTINCT CASE WHEN status_id = 142
+      THEN visitor_id END) AS purchases_count
   FROM buffer
   WHERE
     rn = 1
@@ -128,8 +131,6 @@ aggr_last AS (
     date
   ORDER BY
     date ASC
-
-
 
     SELECT
   DATE_TRUNC('DAY', campaign_date) AS campaign_date,
@@ -170,9 +171,6 @@ GROUP BY
   utm_source
 ORDER BY
   "MAX(total_cost)" DESC
-
-
-
 
   final AS (
     SELECT
