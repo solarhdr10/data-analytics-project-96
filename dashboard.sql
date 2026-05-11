@@ -1,3 +1,4 @@
+/*
 WITH buffer AS (
     SELECT
         s.visitor_id,
@@ -7,16 +8,19 @@ WITH buffer AS (
         s.campaign AS utm_campaign,
         l.lead_id,
         l.created_at,
-      l.amount,
-      l.closing_reason,
-      l.status_id,
-      ROW_NUMBER() OVER (PARTITION BY s.visitor_id ORDER BY s.visit_date DESC) AS rn
+        l.amount,
+        l.closing_reason,
+        l.status_id,
+        ROW_NUMBER() OVER (
+          PARTITION BY s.visitor_id
+          ORDER BY s.visit_date DESC
+        ) AS rn
     FROM sessions AS s
     LEFT JOIN leads AS l
-      ON s.visitor_id = l.visitor_id AND s.visit_date <= l.created_at
+        ON s.visitor_id = l.visitor_id AND s.visit_date <= l.created_at
     WHERE
-      s.medium <> 'organic'
-  )
+        s.medium <> 'organic'
+    )
   SELECT
     utm_source,
     COUNT(DISTINCT visitor_id) AS visitors_count,
@@ -30,22 +34,6 @@ WITH buffer AS (
     utm_source
   ORDER BY
     visitors_count DESC
-
-
-SELECT
-    ROUND(CAST(COUNT(DISTINCT b.lead_id) * 1.0 / COUNT(DISTINCT b.visitor_id) AS DECIMAL), 4) * 100 AS lead_conversion_rate,
-    ROUND(
-      CAST(COUNT(CASE WHEN b.status_id = 142 THEN 1 END) * 1.0 / COUNT(DISTINCT b.lead_id) AS DECIMAL),
-      4
-    ) * 100 AS lead_to_purchase_conversion_rate,
-    ROUND(
-      CAST(COUNT(CASE WHEN b.status_id = 142 THEN 1 END) * 1.0 / COUNT(DISTINCT b.visitor_id) AS DECIMAL),
-      4
-    ) * 100 AS purchase_conversion_rate
-  FROM buffer AS b
-  WHERE
-    b.rn = 1
-
 
 aggr_last AS (
     SELECT
@@ -117,9 +105,9 @@ aggr_last AS (
       al.utm_medium ASC
   )
   SELECT
-    utm_source AS Источник,
-    SUM(total_cost) AS Затраты,
-    SUM(revenue) AS Прибыль
+    utm_source AS source,
+    SUM(total_cost) AS costs,
+    SUM(revenue) AS revenue
   FROM final
   WHERE
     utm_source = 'vk' OR utm_source = 'yandex'
@@ -211,12 +199,13 @@ ORDER BY
       al.utm_medium ASC
   )
   SELECT
-    ROUND(SUM(total_cost) / SUM(visitors_count), 2) AS "Стоимость за клик",
-    ROUND(SUM(total_cost) / SUM(leads_count), 2) AS "Стоимость лида",
-    ROUND(SUM(total_cost) / SUM(purchases_count), 2) AS "Стоимость покупателя",
+    ROUND(SUM(total_cost) / SUM(visitors_count), 2) AS cost_per_click,
+    ROUND(SUM(total_cost) / SUM(leads_count), 2) AS cost_per_lead,
+    ROUND(SUM(total_cost) / SUM(purchases_count), 2) AS cost_per_customer,
     ROUND((
       SUM(revenue) - SUM(total_cost)
     ) / SUM(total_cost) * 100, 2) AS ROI
   FROM final
   HAVING
     NOT ROUND(SUM(total_cost) / SUM(visitors_count), 2) IS NULL
+*/
