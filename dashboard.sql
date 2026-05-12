@@ -109,31 +109,30 @@ FROM final
 WHERE
     utm_source = 'vk' OR utm_source = 'yandex'
 GROUP BY
-    utm_source
+    utm_source;
 
 SELECT
-    EXTRACT(DAY FROM visit_date) AS date,
+    DATE_TRUNC('DAY', visit_date) AS visit_date,
     COUNT(DISTINCT visitor_id) AS visitors_count,
-    COUNT(DISTINCT CASE WHEN NOT lead_id IS NULL
-        THEN visitor_id END) AS leads_count,
-    COUNT(DISTINCT CASE WHEN status_id = 142
-        THEN visitor_id END) AS purchases_count
+    COUNT(DISTINCT CASE
+        WHEN lead_id IS NOT NULL
+            THEN visitor_id
+    END) AS leads_count,
+    COUNT(DISTINCT CASE
+        WHEN status_id = 142
+            THEN visitor_id
+    END) AS purchases_count
 FROM buffer
 WHERE
     rn = 1
 GROUP BY
-    EXTRACT(DAY FROM visit_date)
+    DATE_TRUNC('DAY', visit_date)
 ORDER BY
-    EXTRACT(DAY FROM visit_date) ASC
+    DATE_TRUNC('DAY', visit_date) ASC;
 
 SELECT
-    DATE_TRUNC('DAY', campaign_date) AS campaign_date,
-    utm_source AS utm_source,
-    MAX(total_cost) AS "MAX(total_cost)"
-FROM (
-    SELECT
-    CAST(campaign_date AS DATE) AS campaign_date,
     utm_source,
+    CAST(campaign_date AS DATE) AS campaign_date,
     SUM(daily_spent) AS total_cost
 FROM (
     SELECT
@@ -151,12 +150,12 @@ FROM (
         utm_campaign,
         daily_spent
     FROM ya_ads
-)) AS combined_ads
+)
 GROUP BY
     campaign_date,
     utm_source
 ORDER BY
-    campaign_date
+    campaign_date;
 
 SELECT
     utm_source AS source,
@@ -165,9 +164,9 @@ SELECT
     ROUND(SUM(total_cost) / SUM(purchases_count), 2) AS cost_per_customer,
     ROUND((
         SUM(revenue) - SUM(total_cost)
-    ) / SUM(total_cost) * 100, 2) AS ROI
+    ) / SUM(total_cost) * 100, 2) AS roi
 FROM final
 GROUP BY
     utm_source
 HAVING
-    NOT ROUND(SUM(total_cost) / SUM(visitors_count), 2) IS NULL
+    ROUND(SUM(total_cost) / SUM(visitors_count), 2) IS NOT NULL;
